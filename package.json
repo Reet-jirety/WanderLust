@@ -10,7 +10,7 @@
     "dev": "nodemon app.js",
     "build":"npm install",
     
-   "start":"nodemon backend/index.js"
+   "start":"nodemon app.js"
   },
   "keywords": [],
   "author": "",
