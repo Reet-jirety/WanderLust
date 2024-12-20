@@ -50,7 +50,7 @@ async function main(){
 let port = 8080;
 
 const sessionOptions={
-    secret:"mysupersecretcode",
+    secret:process.env.SECRET,
     resave:false,
     saveUninitialized:true,
     cookie:{
