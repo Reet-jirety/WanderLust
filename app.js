@@ -10,14 +10,15 @@ const mongoose = require("mongoose");
 const path = require("path");
 const methodOverride = require("method-override");
 const ejsMate = require("ejs-mate");
-const session = require("express-session");
+const session = require('express-session');
+const MongoStore = require('connect-mongo');
 const flash = require("connect-flash");
 const passport = require("passport");
 const LocalStrategy = require("passport-local");
 const User = require("./models/user.js");
 
 
-const ExpressError = require("./utils/expressError.js");
+const expressError = require("./utils/expressError.js");
 
 
 const listingsRouter = require("./routes/listing.js")
@@ -26,7 +27,8 @@ const userRouter = require("./routes/user.js");
 
 const { register } = require("module");
 
-const MONGO_URL = "mongodb://127.0.0.1:27017/wanderlust";
+// const MONGO_URL = "mongodb://127.0.0.1:27017/wanderlust";
+const dburl = process.env.ATLASDB_URL;
 
 app.set("view engine","ejs");
 app.set("views",path.join(__dirname,"views"));
@@ -44,17 +46,29 @@ main()
    })
 
 async function main(){
-    await mongoose.connect(MONGO_URL);
+    await mongoose.connect(dburl);
 }
 
 let port = 8080;
 
+const store = MongoStore.create({
+    mongoUrl : dburl,
+    crypto: {
+        secret:process.env.SECRET,
+    },
+    touchAfter: 24*3600,
+    
+ });
+store.on("error", ()=>{
+    console.log("ERROR in MONGO STORE",err);
+});
 const sessionOptions={
+    store,
     secret:process.env.SECRET,
     resave:false,
     saveUninitialized:true,
     cookie:{
-        expires:Date.now()+1000*60*60*24*7,
+        expires:new Date(Date.now()+1000*60*60*24*7),
         maxAge:1000*60*60*24*7,
         httpOnly:true,
     },
@@ -64,6 +78,7 @@ const sessionOptions={
 // app.get("/",(req,res)=>{
 //     res.send("Hi, I am root");
 // })
+
 
 
 app.use(session(sessionOptions));
@@ -101,7 +116,7 @@ app.use("/",userRouter);
 
 
 app.all("*",(req,res,next)=>{
-    next(new ExpressError(404,"Page not found!!"));
+    next(new expressError(404,"Page not found!!"));
 })
 app.use((err,req,res,next)=>{
     let {statuscode=500,message="something went wrong"} = err;
