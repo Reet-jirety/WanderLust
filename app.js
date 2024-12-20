@@ -17,7 +17,7 @@ const LocalStrategy = require("passport-local");
 const User = require("./models/user.js");
 
 
-const expressError = require("./utils/expressError.js");
+const ExpressError = require("./utils/expressError.js");
 
 
 const listingsRouter = require("./routes/listing.js")
@@ -101,7 +101,7 @@ app.use("/",userRouter);
 
 
 app.all("*",(req,res,next)=>{
-    next(new expressError(404,"Page not found!!"));
+    next(new ExpressError(404,"Page not found!!"));
 })
 app.use((err,req,res,next)=>{
     let {statuscode=500,message="something went wrong"} = err;
